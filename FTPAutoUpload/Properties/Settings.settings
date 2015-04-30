@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FTPAutoUpload.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ftphost" Type="System.String" Scope="User">
+      <Value Profile="(Default)">localhost</Value>
+    </Setting>
+    <Setting Name="watchdir" Type="System.String" Scope="User">
+      <Value Profile="(Default)">.</Value>
+    </Setting>
+    <Setting Name="watchpattern" Type="System.String" Scope="User">
+      <Value Profile="(Default)">*.jpg</Value>
+    </Setting>
+    <Setting Name="everynthfile" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="ftpuser" Type="System.String" Scope="User">
+      <Value Profile="(Default)">basti</Value>
+    </Setting>
+    <Setting Name="ftppass" Type="System.String" Scope="User">
+      <Value Profile="(Default)">geheim</Value>
+    </Setting>
+    <Setting Name="remotedir" Type="System.String" Scope="User">
+      <Value Profile="(Default)">wp-content</Value>
+    </Setting>
+    <Setting Name="constantFileName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">constant.jpg</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
