@@ -12,6 +12,7 @@ namespace FTPAutoUpload {
 			if (Directory.Exists(watchdir)) {
 				var watcher = new FileSystemWatcher();
 				watcher.Path = watchdir;
+				watcher.IncludeSubdirectories = true;
 				watcher.Filter = Properties.Settings.Default.watchpattern;
 				watcher.Created += watcher_Changed;
 				watcher.EnableRaisingEvents = true;
@@ -40,6 +41,7 @@ namespace FTPAutoUpload {
 		private static void WaitForFileAndUpload(string localFileNameWithPath) {
 			WaitForFile(new FileInfo(localFileNameWithPath));
 
+
 			Console.ForegroundColor = ConsoleColor.DarkGreen;
 			Console.WriteLine("Start upload file {0}", localFileNameWithPath);
 			string rd = Properties.Settings.Default.remotedir;
@@ -48,6 +50,15 @@ namespace FTPAutoUpload {
 			string user = Properties.Settings.Default.ftpuser;
 			string pass = Properties.Settings.Default.ftppass;
 			string cf = Properties.Settings.Default.constantFileName;
+
+			var wdfp = Path.GetFullPath(Properties.Settings.Default.watchdir);
+			var lffp = Path.GetFullPath(localFileNameWithPath);
+
+			if (lffp.StartsWith(wdfp)) {
+				var addToRemoteDir = lffp.Substring(wdfp.Length+1);
+				rd = Path.Combine(rd, addToRemoteDir);
+			}
+
 			// upload once with original file name
 			var success = UploadFtpFile(localFileNameWithPath, rd, rf, host, user, pass);
 			if (success) {
