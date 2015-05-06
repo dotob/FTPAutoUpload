@@ -26,5 +26,8 @@
     <Setting Name="constantFileName" Type="System.String" Scope="User">
       <Value Profile="(Default)">constant.jpg</Value>
     </Setting>
+    <Setting Name="constantdir" Type="System.String" Scope="User">
+      <Value Profile="(Default)">wp-content</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

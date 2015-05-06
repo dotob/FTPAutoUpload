@@ -118,5 +118,17 @@ namespace FTPAutoUpload.Properties {
                 this["constantFileName"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("wp-content")]
+        public string constantdir {
+            get {
+                return ((string)(this["constantdir"]));
+            }
+            set {
+                this["constantdir"] = value;
+            }
+        }
     }
 }

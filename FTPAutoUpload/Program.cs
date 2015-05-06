@@ -41,7 +41,6 @@ namespace FTPAutoUpload {
 		private static void WaitForFileAndUpload(string localFileNameWithPath) {
 			WaitForFile(new FileInfo(localFileNameWithPath));
 
-
 			Console.ForegroundColor = ConsoleColor.DarkGreen;
 			Console.WriteLine("Start upload file {0}", localFileNameWithPath);
 			string rd = Properties.Settings.Default.remotedir;
@@ -50,6 +49,8 @@ namespace FTPAutoUpload {
 			string user = Properties.Settings.Default.ftpuser;
 			string pass = Properties.Settings.Default.ftppass;
 			string cf = Properties.Settings.Default.constantFileName;
+			string cd = Properties.Settings.Default.constantdir;
+
 
 			var wdfp = Path.GetFullPath(Properties.Settings.Default.watchdir);
 			var lffp = Path.GetFullPath(localFileNameWithPath);
@@ -66,7 +67,11 @@ namespace FTPAutoUpload {
 			}
 			// upload second time 
 			if (!string.IsNullOrWhiteSpace(cf)) {
-				success = UploadFtpFile(localFileNameWithPath, rd, cf, host, user, pass);
+				// if constantdir is empty use remotedir (with rel folder)
+				if (string.IsNullOrWhiteSpace(cd)) {
+					cd = rd;
+				}
+				success = UploadFtpFile(localFileNameWithPath, cd, cf, host, user, pass);
 				if (success) {
 					Console.WriteLine("Finished upload file {0} to {1}{2} (constant file name)", localFileNameWithPath, rd, cf);
 				}
