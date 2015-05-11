@@ -23,11 +23,17 @@
     <Setting Name="remotedir" Type="System.String" Scope="User">
       <Value Profile="(Default)">wp-content</Value>
     </Setting>
-    <Setting Name="constantFileName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">constant.jpg</Value>
+    <Setting Name="constantpattern" Type="System.String" Scope="User">
+      <Value Profile="(Default)">live_{0}.jpg</Value>
     </Setting>
     <Setting Name="constantdir" Type="System.String" Scope="User">
       <Value Profile="(Default)">wp-content</Value>
+    </Setting>
+    <Setting Name="simulate" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="constantcount" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">5</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -109,13 +109,13 @@ namespace FTPAutoUpload.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("constant.jpg")]
-        public string constantFileName {
+        [global::System.Configuration.DefaultSettingValueAttribute("live_{0}.jpg")]
+        public string constantpattern {
             get {
-                return ((string)(this["constantFileName"]));
+                return ((string)(this["constantpattern"]));
             }
             set {
-                this["constantFileName"] = value;
+                this["constantpattern"] = value;
             }
         }
         
@@ -128,6 +128,30 @@ namespace FTPAutoUpload.Properties {
             }
             set {
                 this["constantdir"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool simulate {
+            get {
+                return ((bool)(this["simulate"]));
+            }
+            set {
+                this["simulate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int constantcount {
+            get {
+                return ((int)(this["constantcount"]));
+            }
+            set {
+                this["constantcount"] = value;
             }
         }
     }
