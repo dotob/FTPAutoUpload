@@ -30,16 +30,50 @@ namespace FTPAutoUpload {
 		private static void watcher_Changed(object sender, FileSystemEventArgs e) {
 			counter++;
 			var localFileNameWithPath = e.FullPath;
-			if (counter%Properties.Settings.Default.everynthfile == 0) {
-				WaitForFileAndUpload(localFileNameWithPath);
+			WaitForFile(new FileInfo(localFileNameWithPath));
+			if (counter % Properties.Settings.Default.everynthfile == 0) {
+				UploadNewFile(localFileNameWithPath);
 			}
 			else {
 				Console.ForegroundColor = ConsoleColor.White;
 				Console.WriteLine("Ignore file {0} ({1}/{2})", localFileNameWithPath, counter % Properties.Settings.Default.everynthfile, Properties.Settings.Default.everynthfile);
-			}
+			}			
+			
+			WaitForFile(new FileInfo(localFileNameWithPath));
+			UploadAndRotate(localFileNameWithPath);
 		}
 
-		private static void WaitForFileAndUpload(string localFileNameWithPath) {
+		private static void UploadNewFile(string localFileNameWithPath) {
+
+			Console.ForegroundColor = ConsoleColor.DarkGreen;
+			Console.WriteLine("Start upload file {0}", localFileNameWithPath);
+			string rd = Properties.Settings.Default.remotedir;
+			string rf = Path.GetFileName(localFileNameWithPath);
+			string host = Properties.Settings.Default.ftphost;
+			string user = Properties.Settings.Default.ftpuser;
+			string pass = Properties.Settings.Default.ftppass;
+			string cf = Properties.Settings.Default.constantpattern;
+			string cd = Properties.Settings.Default.constantdir;
+			int cc = Properties.Settings.Default.constantcount;
+
+
+			var wdfp = Path.GetFullPath(Properties.Settings.Default.watchdir).Replace('\\', '/');
+			var lffp = Path.GetFullPath(localFileNameWithPath).Replace('\\', '/');
+
+			if (lffp.StartsWith(wdfp)) {
+				var addToRemoteDir = lffp.Substring(wdfp.Length);
+				rd = string.Format("{0}/{1}", rd, addToRemoteDir);
+			}
+
+			// upload once with original file name
+			var success = UploadFtpFile(localFileNameWithPath, rd, rf, host, user, pass);
+			if (success) {
+				Console.ForegroundColor = ConsoleColor.DarkGreen;
+				Console.WriteLine("  Finished upload file {0} to {1}{2} (original file name)", localFileNameWithPath, rd, rf);
+			}
+		}
+		
+		private static void UploadAndRotate(string localFileNameWithPath) {
 			WaitForFile(new FileInfo(localFileNameWithPath));
 
 			Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -54,12 +88,12 @@ namespace FTPAutoUpload {
 			int cc = Properties.Settings.Default.constantcount;
 
 
-			var wdfp = Path.GetFullPath(Properties.Settings.Default.watchdir);
-			var lffp = Path.GetFullPath(localFileNameWithPath);
+			var wdfp = Path.GetFullPath(Properties.Settings.Default.watchdir).Replace('\\', '/');
+			var lffp = Path.GetFullPath(localFileNameWithPath).Replace('\\', '/');
 
 			if (lffp.StartsWith(wdfp)) {
-				var addToRemoteDir = lffp.Substring(wdfp.Length+1);
-				rd = Path.Combine(rd, addToRemoteDir);
+				var addToRemoteDir = lffp.Substring(wdfp.Length);
+				rd = string.Format("{0}/{1}", rd, addToRemoteDir);
 			}
 
 			// upload once with original file name
@@ -123,6 +157,8 @@ namespace FTPAutoUpload {
 		}
 
 		public static bool UploadFtpFile(string localFileNameWithPath, string remoteFolderName, string remoteFileNameNoPath, string host, string user, string pass) {
+			Console.ForegroundColor = ConsoleColor.Blue;
+			Console.WriteLine("  UploadFtpFile({0}, {1}, {2}, {3})", localFileNameWithPath, remoteFolderName, remoteFileNameNoPath, host);
 			if (test) {
 				return true;
 			}
