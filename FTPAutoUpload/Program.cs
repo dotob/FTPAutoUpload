@@ -7,8 +7,9 @@ namespace FTPAutoUpload {
 	class Program {
 		private static int counter = 0;
 		private static readonly bool test = Properties.Settings.Default.simulate;
+		private static readonly NetworkCredential uspw = new NetworkCredential(Properties.Settings.Default.ftpuser, Properties.Settings.Default.ftppass);
 
-		static void Main(string[] args) {
+		static void Main() {
 			var watchdir = Properties.Settings.Default.watchdir;
 			if (Directory.Exists(watchdir)) {
 				var watcher = new FileSystemWatcher();
@@ -39,7 +40,7 @@ namespace FTPAutoUpload {
 				Console.WriteLine("Ignore file {0} ({1}/{2})", localFileNameWithPath, counter % Properties.Settings.Default.everynthfile, Properties.Settings.Default.everynthfile);
 			}			
 			
-			//UploadAndRotate(localFileNameWithPath);
+			UploadAndRotate(localFileNameWithPath);
 		}
 
 		private static void UploadNewFile(string localFileNameWithPath) {
@@ -48,8 +49,6 @@ namespace FTPAutoUpload {
 			string rd = Properties.Settings.Default.remotedir;
 			string rf = Path.GetFileName(localFileNameWithPath);
 			string host = Properties.Settings.Default.ftphost;
-			string user = Properties.Settings.Default.ftpuser;
-			string pass = Properties.Settings.Default.ftppass;
 
 			var wdfp = Path.GetFullPath(Properties.Settings.Default.watchdir).Replace('\\', '/');
 			var lffp = Path.GetFullPath(localFileNameWithPath).Replace('\\', '/');
@@ -61,10 +60,10 @@ namespace FTPAutoUpload {
 				remoteDirToCheck = Path.GetDirectoryName(rd).Replace('\\', '/');
 			}
 			// make dir
-			var success = CreateFtpDir(remoteDirToCheck, host, user, pass);
+			CreateFtpDir(remoteDirToCheck, host);
 
 			// upload once with original file name
-			success = UploadFtpFile(localFileNameWithPath, rd, rf, host, user, pass);
+			var success = UploadFtpFile(localFileNameWithPath, remoteDirToCheck, rf, host);
 			if (success) {
 				Console.ForegroundColor = ConsoleColor.DarkGreen;
 				Console.WriteLine("  Finished upload file {0} to {1}{2} (original file name)", localFileNameWithPath, rd, rf);
@@ -75,8 +74,6 @@ namespace FTPAutoUpload {
 			Console.ForegroundColor = ConsoleColor.DarkGreen;
 			Console.WriteLine("Start upload rotate file {0}", localFileNameWithPath);
 			string host = Properties.Settings.Default.ftphost;
-			string user = Properties.Settings.Default.ftpuser;
-			string pass = Properties.Settings.Default.ftppass;
 			string cf = Properties.Settings.Default.constantpattern;
 			string cd = Properties.Settings.Default.constantdir;
 			int cc = Properties.Settings.Default.constantcount;
@@ -86,7 +83,7 @@ namespace FTPAutoUpload {
 				var cfp = string.Format("{0}/{1}", cd, cf);
 				// at first remove last file of rotation
 				var lastRotationFileName = string.Format(cfp, cc);
-				var success = DeleteFtpFile(lastRotationFileName, host, user, pass);
+				var success = DeleteFtpFile(lastRotationFileName, host);
 				if (success) {
 					Console.ForegroundColor = ConsoleColor.DarkGreen;
 					Console.WriteLine("  Deleted {0}", lastRotationFileName);
@@ -96,7 +93,7 @@ namespace FTPAutoUpload {
 				for (int i = cc; i > 1; i--) {
 					var oldPath = string.Format(cfp, i-1);
 					var newPath = string.Format("/"+cfp, i);
-					success = RenameFtpFile(oldPath, newPath, host, user, pass);
+					success = RenameFtpFile(oldPath, newPath, host);
 					if (success) {
 						Console.ForegroundColor = ConsoleColor.DarkGreen;
 						Console.WriteLine("  Renamed {0} to {1}", oldPath, newPath);
@@ -105,7 +102,7 @@ namespace FTPAutoUpload {
 
 				// upload new file
 				var newFilename = string.Format(cf, 1);
-				success = UploadFtpFile(localFileNameWithPath, cd, newFilename, host, user, pass);
+				success = UploadFtpFile(localFileNameWithPath, cd, newFilename, host);
 				if (success) {
 					Console.ForegroundColor = ConsoleColor.DarkGreen;
 					Console.WriteLine("  Finished upload file {0} to {1}/{2} (constant file name)", localFileNameWithPath, cd, newFilename);
@@ -134,7 +131,7 @@ namespace FTPAutoUpload {
 			}
 		}
 
-		public static bool UploadFtpFile(string localFileNameWithPath, string remoteFolderName, string remoteFileNameNoPath, string host, string user, string pass) {
+		public static bool UploadFtpFile(string localFileNameWithPath, string remoteFolderName, string remoteFileNameNoPath, string host) {
 			Console.ForegroundColor = ConsoleColor.Blue;
 			Console.WriteLine("  UploadFtpFile({0}, {1}, {2}, {3})", localFileNameWithPath, remoteFolderName, remoteFileNameNoPath, host);
 			if (test) {
@@ -148,7 +145,7 @@ namespace FTPAutoUpload {
 					request.UseBinary = true;
 					request.UsePassive = true;
 					request.KeepAlive = true;
-					request.Credentials = new NetworkCredential(user, pass);
+					request.Credentials = uspw;
 
 					using (var fs = File.OpenRead(localFileNameWithPath)) {
 						var buffer = new byte[fs.Length];
@@ -172,7 +169,7 @@ namespace FTPAutoUpload {
 			return success;
 		}
 
-		public static bool RenameFtpFile(string oldPath, string newPath, string host, string user, string pass) {
+		public static bool RenameFtpFile(string oldPath, string newPath, string host) {
 			Console.ForegroundColor = ConsoleColor.Blue;
 			Console.WriteLine("  RenameFtpFile({0}, {1}, {2})", oldPath, newPath, host);
 			if (test) {
@@ -184,7 +181,7 @@ namespace FTPAutoUpload {
 				var request = WebRequest.Create(requestUri) as FtpWebRequest;
 				if (request != null) {
 					request.Method = WebRequestMethods.Ftp.Rename;
-					request.Credentials = new NetworkCredential(user, pass);
+					request.Credentials = uspw;
 					request.RenameTo = newPath;
 					request.GetResponse();
 					success = true;
@@ -200,9 +197,9 @@ namespace FTPAutoUpload {
 			return success;
 		}
 
-		public static bool DeleteFtpFile(string path, string host, string user, string pass) {
+		public static bool DeleteFtpFile(string path, string host) {
 			Console.ForegroundColor = ConsoleColor.Blue;
-			Console.WriteLine("  RenameFtpFile({0}, {1})", path, host);
+			Console.WriteLine("  DeleteFtpFile({0}, {1})", path, host);
 			if (test) {
 				return true;
 			} 
@@ -211,7 +208,7 @@ namespace FTPAutoUpload {
 				var request = WebRequest.Create(new Uri(string.Format(@"ftp://{0}/{1}", host, path))) as FtpWebRequest;
 				if (request != null) {
 					request.Method = WebRequestMethods.Ftp.DeleteFile;
-					request.Credentials = new NetworkCredential(user, pass);
+					request.Credentials = uspw;
 					request.GetResponse();
 					success = true;
 				}
@@ -226,9 +223,9 @@ namespace FTPAutoUpload {
 			return success;
 		}
 
-		public static bool CreateFtpDir(string path, string host, string user, string pass) {
+		public static bool CreateFtpDir(string path, string host) {
 			Console.ForegroundColor = ConsoleColor.Blue;
-			Console.WriteLine("  RenameFtpFile({0}, {1})", path, host);
+			Console.WriteLine("  CreateFtpDir({0}, {1})", path, host);
 			if (test) {
 				return true;
 			} 
@@ -237,7 +234,7 @@ namespace FTPAutoUpload {
 				var request = WebRequest.Create(new Uri(string.Format(@"ftp://{0}/{1}", host, path))) as FtpWebRequest;
 				if (request != null) {
 					request.Method = WebRequestMethods.Ftp.MakeDirectory;
-					request.Credentials = new NetworkCredential(user, pass);
+					request.Credentials = uspw;
 					request.GetResponse();
 					success = true;
 				}
@@ -247,8 +244,8 @@ namespace FTPAutoUpload {
 					//Console.WriteLine("Could not create mkdir Webrequest");
 				}
 			} catch (Exception ex) {
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine("Error: {0}", ex);
+				//Console.ForegroundColor = ConsoleColor.Red;
+				//Console.WriteLine("Error: {0}", ex);
 			}
 			return success;
 		}
